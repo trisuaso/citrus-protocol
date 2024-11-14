@@ -36,11 +36,11 @@ name = "Alice's server"
 id = "example.com"
 
 [[schemas]]
-id = "net.rainbeam.structs.question"
+id = "net.rainbeam.structs.Question"
 location = "schemas/structs/question.toml"
 
 [[schemas]]
-id = "net.rainbeam.structs.response"
+id = "net.rainbeam.structs.Response"
 location = "schemas/structs/response.toml"
 ```
 
@@ -53,7 +53,7 @@ In the `schemas` array, you'll find information about the schemas that are suppo
 Schemas are a simple definition of a data structure which will be returned by the server's API. Schemas must be defined in TOML. A schema must look like this TOML example:
 
 ```toml
-id = "net.rainbeam.structs.question"
+id = "net.rainbeam.structs.Question"
 
 [struct]
 # This example provides the schema for net.rainbeam.structs.question.
@@ -92,19 +92,19 @@ name = "Alice's server"
 id = "example.com"
 
 [[schemas]]
-id = "com.example.structs.user"
+id = "com.example.structs.User"
 location = "schemas/structs/users.toml"
 
 [[schemas]]
-id = "com.example.structs.post"
+id = "com.example.structs.Post"
 location = "schemas/structs/post.toml"
 
 [[schemas]]
-id = "com.example.structs.like"
+id = "com.example.structs.Like"
 location = "schemas/structs/like.toml"
 
 [[schemas]]
-id = "com.example.structs.notification"
+id = "com.example.structs.Notification"
 location = "schemas/structs/notification.toml"
 ```
 
@@ -117,3 +117,28 @@ For likes, however, we will need to create data on the other server **and** our 
 There is no reason for the server which doesn't have the user to be managing private data for the user, such as notifications. This should all be done when the server which *does* own the user receives information from the server that doesn't.
 
 By doing things this way, the server that sent the like knows that its user liked a post which is *not* on it, but is instead on another server. The other server knows that a post which *is* on it received a like, and it knows that the user who liked it is on another server.
+
+## Schema APIs
+
+Servers can optionally define an `api` field in the `SchemaPointer` of any schema. This field is used to include vital information to allow other apps to know how to use your app's API through the `citrus.toml` file.
+
+In a schema's API definition, you **must** include the URL, method, and expected body of each request you could send to the API that this schema is supported by. You are allowed to define multiple API endpoints for a single schema. It is the job of the Citrus client on the remote server to read your API endpoints and evaluate the best one for their use case.
+
+Here's a quick example:
+
+```toml
+[server]
+name = "Alice's server"
+id = "example.com"
+
+[[schemas]]
+id = "net.rainbeam.structs.Question"
+location = "schemas/structs/question.toml"
+
+[[schemas.api.create]]
+method = "POST"
+url = "/api/v1/questions"
+body = "{\"content\":\"<field>\"}"
+```
+
+In the API definition, we provide the method, URL, and body template of the API endpoint. In the API body, we can specify that data is expected to be replaced by using `<field>`. When a Citrus client is sending a request using this API endpoint, all data given to it (in a `Vec<String>`, for example) should fill in by replacing a single `<field>` value (from left to right).
