@@ -135,7 +135,7 @@ id = "example.com"
 id = "net.rainbeam.structs.Question"
 location = "schemas/structs/question.toml"
 
-[[schemas.api.create]]
+[schemas.api.create]
 method = "POST"
 url = "/api/v1/questions"
 body = "{\"content\":\"<field>\"}"
